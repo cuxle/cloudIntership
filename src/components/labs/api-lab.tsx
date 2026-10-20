@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { previewChat } from "@/lib/demo-chat";
 
 type Usage = { prompt_tokens: number; completion_tokens: number };
 
@@ -37,53 +38,27 @@ export function ApiLab() {
     setNote("");
     setUsage(null);
     setStatus(null);
+    const result = previewChat(payload);
+    setStatus(result.status);
+    if (!result.ok) {
+      setError(result.error);
+      setPending(false);
+      return;
+    }
     try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      setStatus(response.status);
-      if (!response.ok) {
-        const failure = (await response.json()) as { error?: string };
-        setError(failure.error ?? "请求失败。");
-        return;
-      }
       if (!stream) {
-        const data = (await response.json()) as {
-          choices: { message: { content: string } }[];
-          usage: Usage;
-          moke: { note: string };
-        };
-        setReply(data.choices[0]?.message.content ?? "");
-        setNote(data.moke.note);
-        setUsage(data.usage);
+        setReply(result.content);
+        setNote(result.note);
+        setUsage(result.usage);
         return;
       }
-      const reader = response.body?.getReader();
-      if (!reader) {
-        setError("浏览器没有拿到流式响应。");
-        return;
+      const characters = [...result.content];
+      for (let index = 0; index < characters.length; index += 2) {
+        setReply((current) => current + characters.slice(index, index + 2).join(""));
+        await new Promise((resolve) => setTimeout(resolve, 16));
       }
-      const decoder = new TextDecoder();
-      let buffer = "";
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const events = buffer.split("\n\n");
-        buffer = events.pop() ?? "";
-        for (const event of events) {
-          const data = event.replace(/^data:\s*/, "").trim();
-          if (!data || data === "[DONE]") continue;
-          const chunk = JSON.parse(data) as { content?: string; note?: string; usage?: Usage };
-          if (chunk.content) setReply((current) => current + chunk.content);
-          if (chunk.note) setNote(chunk.note);
-          if (chunk.usage) setUsage(chunk.usage);
-        }
-      }
-    } catch {
-      setError("网络中断了，没有收到完整响应。");
+      setNote(result.note);
+      setUsage(result.usage);
     } finally {
       setPending(false);
     }
@@ -135,7 +110,7 @@ export function ApiLab() {
           <Textarea value={userText} onChange={(event) => setUserText(event.target.value)} className="mt-1 min-h-20 bg-background" />
         </label>
         <Button type="button" onClick={send} disabled={pending} className="h-10 px-4">
-          {pending ? "正在接收…" : "发送到 /api/chat"}
+          {pending ? "正在接收…" : "发送这次请求"}
         </Button>
         <pre className="overflow-auto rounded-xl bg-[#231e18] p-4 font-mono text-[12px] leading-6 text-[#f6f1e7]">
           {JSON.stringify(payload, null, 2)}
@@ -147,7 +122,7 @@ export function ApiLab() {
         {error ? <p className="mt-3 text-sm leading-6 text-destructive">{error}</p> : null}
         {!error && !reply && !pending ? (
           <p className="mt-3 text-sm leading-7 text-muted-foreground">
-            还没有请求。发送之后，这里会逐字出现教学接口的回复。它不会转发给外部模型。
+            还没有请求。发送之后，手机会在本地逐字显示教学回复，不联网，也不会把密钥发出去。
           </p>
         ) : null}
         {reply ? <p className="mt-3 whitespace-pre-wrap text-sm leading-7">{reply}</p> : null}

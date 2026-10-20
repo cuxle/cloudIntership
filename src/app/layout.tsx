@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Noto_Sans_SC, Noto_Serif_SC } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
 import { ProgressProvider } from "@/lib/progress";
@@ -28,6 +28,13 @@ const mono = IBM_Plex_Mono({
   preload: false,
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#f4efe6",
+};
+
 export const metadata: Metadata = {
   title: {
     default: "模课 · 大模型应用开发",
@@ -42,7 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="zh-CN"
       className={`${sans.variable} ${serif.variable} ${mono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-background text-foreground">
+      <body className="min-h-full bg-background pb-[env(safe-area-inset-bottom)] text-foreground">
         <ProgressProvider>
           <SiteHeader />
           {children}

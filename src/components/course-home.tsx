@@ -20,7 +20,7 @@ export function CourseHome() {
       <p className="text-sm tracking-[0.22em] text-primary">大模型应用开发</p>
       <h1 className="mt-3 font-serif text-6xl leading-none text-foreground sm:text-7xl">模课</h1>
       <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
-        八节课，从一次调用走到能上线的形状：消息、提示词、接口、结构化输出、检索和工具。实验在本地把请求拆开，不需要 API 密钥。
+        八节课，从一次调用走到能上线的形状：消息、提示词、接口、结构化输出、检索和工具。装在手机上也能离线学，实验不联网，不需要 API 密钥。
       </p>
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
         <Link href={`/learn/${nextLesson.slug}`} className={cn(buttonVariants(), "h-10 px-4")}>

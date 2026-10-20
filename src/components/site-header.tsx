@@ -7,7 +7,7 @@ import { useProgress } from "@/lib/progress";
 export function SiteHeader() {
   const progress = useProgress();
   return (
-    <header className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-5 py-3">
         <Link href="/" className="font-serif text-xl tracking-wide text-foreground">
           模课

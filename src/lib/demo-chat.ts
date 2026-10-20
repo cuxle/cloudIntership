@@ -15,6 +15,34 @@ export function modelNote(model: string): string {
   return "小模型适合路由和抽取。答不稳时再升级，而不是所有请求都走最贵的模型。";
 }
 
+export function previewChat(input: {
+  model?: string;
+  temperature?: number;
+  messages?: DemoMessage[];
+  apiKey?: string;
+}):
+  | { ok: false; status: number; error: string }
+  | { ok: true; status: 200; content: string; note: string; usage: { prompt_tokens: number; completion_tokens: number } } {
+  if (input.apiKey) {
+    return { ok: false, status: 400, error: "不要把密钥放进浏览器请求。密钥只留在服务端环境变量里。" };
+  }
+  const messages = input.messages ?? [];
+  if (messages.length === 0) {
+    return { ok: false, status: 400, error: "messages 必须是非空数组。" };
+  }
+  for (const message of messages) {
+    if (typeof message.role !== "string" || typeof message.content !== "string") {
+      return { ok: false, status: 400, error: "每条消息都要有字符串 role 和 content。" };
+    }
+  }
+  const model = input.model === "demo-large" ? "demo-large" : "demo-small";
+  const temperature = typeof input.temperature === "number" && Number.isFinite(input.temperature)
+    ? Math.min(2, Math.max(0, input.temperature))
+    : 0;
+  const reply = demoReply(messages, temperature, model);
+  return { ok: true, status: 200, content: reply.content, note: reply.note, usage: reply.usage };
+}
+
 export function demoReply(messages: DemoMessage[], temperature: number, model: string) {
   const system = messages.find((message) => message.role === "system");
   const user = [...messages].reverse().find((message) => message.role === "user");
