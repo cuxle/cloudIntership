@@ -13,6 +13,8 @@ npm run dev
 
 打开 [http://127.0.0.1:3847](http://127.0.0.1:3847)。
 
+可以直接下载仓库里的 [release/moke-course.apk](release/moke-course.apk)，传到手机后安装。应用名是「模课」。
+
 ## 手机安装包
 
 调试版 APK 可以用 Android Studio 或本机的 Android SDK 重新打出来：
